@@ -76,8 +76,8 @@ fn char_from_string(string: &str) -> char {
     string.chars().next().expect("Expected a single character.")
 }
 
-fn shape_pairs_from_input(input: &str) -> Vec<(Shape, Shape)> {
-    let mut shape_pairs: Vec<(Shape, Shape)> = Vec::new();
+fn letter_pairs_from_input(input: &str) -> Vec<(char, char)> {
+    let mut shape_pairs: Vec<(char, char)> = Vec::new();
 
     for line in input.lines() {
         let (letter1, letter2) = line
@@ -85,17 +85,40 @@ fn shape_pairs_from_input(input: &str) -> Vec<(Shape, Shape)> {
             .map(|(letter1, letter2)| (char_from_string(letter1), char_from_string(letter2)))
             .expect("Expected line to be two letters separated by a space.");
 
-        shape_pairs.push((shape_from_letter(letter1), shape_from_letter(letter2)));
+        shape_pairs.push((letter1, letter2));
     }
 
     shape_pairs
+}
+
+fn shape_for_outcome(opponent_shape: &Shape, desired_outcome: &Outcome) -> Shape {
+    match desired_outcome {
+        Outcome::Win => match opponent_shape {
+            Shape::Rock => Shape::Paper,
+            Shape::Paper => Shape::Scissors,
+            Shape::Scissors => Shape::Rock,
+        },
+        Outcome::Loss => match opponent_shape {
+            Shape::Rock => Shape::Scissors,
+            Shape::Paper => Shape::Rock,
+            Shape::Scissors => Shape::Paper,
+        },
+        Outcome::Draw => match opponent_shape {
+            Shape::Rock => Shape::Rock,
+            Shape::Paper => Shape::Paper,
+            Shape::Scissors => Shape::Scissors,
+        },
+    }
 }
 
 // TODO: Refactor to use map instead of for loop.
 fn part_one(input: &str) -> u32 {
     let mut total_score: u32 = 0;
 
-    for (their_shape, my_shape) in shape_pairs_from_input(input) {
+    for (letter1, letter2) in letter_pairs_from_input(input) {
+        let my_shape = shape_from_letter(letter2);
+        let their_shape = shape_from_letter(letter1);
+
         total_score += my_shape.points() as u32;
         total_score += my_shape.vs(&their_shape).points() as u32;
     }
@@ -104,7 +127,18 @@ fn part_one(input: &str) -> u32 {
 }
 
 fn part_two(input: &str) -> u32 {
-    0
+    let mut total_score = 0;
+
+    for (letter1, letter2) in letter_pairs_from_input(input) {
+        let their_shape = shape_from_letter(letter1);
+        let desired_outcome = outcome_from_letter(letter2);
+        let my_shape = shape_for_outcome(&their_shape, &desired_outcome);
+
+        total_score += my_shape.points() as u32;
+        total_score += desired_outcome.points() as u32;
+    }
+
+    total_score
 }
 
 fn main() {
