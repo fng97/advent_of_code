@@ -1,5 +1,8 @@
 /target
 
+# MacOS
+.DS_Store
+
 # advent of code input data
 inputs
 
